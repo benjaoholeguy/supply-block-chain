@@ -18,6 +18,7 @@ export class AssetTransferContract extends Contract {
                 Color: 'blue',
                 Size: 5,
                 Owner: 'Tomoko',
+                Coordinates: {latitude: -37.3159, longitude: 81.1496},
                 AppraisedValue: 300,
             },
             {
@@ -25,6 +26,7 @@ export class AssetTransferContract extends Contract {
                 Color: 'red',
                 Size: 5,
                 Owner: 'Brad',
+                Coordinates: {latitude: -43.9509, longitude: -34.4618},
                 AppraisedValue: 400,
             },
             {
@@ -32,6 +34,7 @@ export class AssetTransferContract extends Contract {
                 Color: 'green',
                 Size: 10,
                 Owner: 'Jin Soo',
+                Coordinates: {latitude: -68.6102, longitude: -47.0653},
                 AppraisedValue: 500,
             },
             {
@@ -39,6 +42,7 @@ export class AssetTransferContract extends Contract {
                 Color: 'yellow',
                 Size: 10,
                 Owner: 'Max',
+                Coordinates: {latitude: 29.4572, longitude: -164.2990},
                 AppraisedValue: 600,
             },
             {
@@ -46,6 +50,7 @@ export class AssetTransferContract extends Contract {
                 Color: 'black',
                 Size: 15,
                 Owner: 'Adriana',
+                Coordinates: {latitude: -31.8129, longitude: 62.5342},
                 AppraisedValue: 700,
             },
             {
@@ -53,6 +58,7 @@ export class AssetTransferContract extends Contract {
                 Color: 'white',
                 Size: 15,
                 Owner: 'Michel',
+                Coordinates: {latitude: -71.4197, longitude: 71.7478},
                 AppraisedValue: 800,
             },
         ];
@@ -81,6 +87,7 @@ export class AssetTransferContract extends Contract {
             Color: color,
             Size: size,
             Owner: owner,
+            Coordinates: {latitude: -71.4197, longitude: 71.7478},
             AppraisedValue: appraisedValue,
         };
         // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
@@ -111,6 +118,7 @@ export class AssetTransferContract extends Contract {
             Color: color,
             Size: size,
             Owner: owner,
+            Coordinates: {latitude: -71.4197, longitude: 71.7478},
             AppraisedValue: appraisedValue,
         };
         // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
@@ -146,6 +154,75 @@ export class AssetTransferContract extends Contract {
         await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(asset))));
         return oldOwner;
     }
+
+    // TransferAsset updates the owner field of asset with given id in the world state, and returns the old owner.
+    @Transaction()
+    public async InvokeOracle(ctx: Context, id: string): Promise<string> {
+        const assetString = await this.ReadAsset(ctx, id);
+        const asset = JSON.parse(assetString);
+        const oldCoordinates = asset.Coordinates;
+
+        // const API_KEY = '8UEv7AXhVTqYAbt8o9YjVb';
+
+        // Create a URL to the weather API.
+        // const url = `https://forecast-v2.metoceanapi.com/point/time`;
+
+        // Create a request to the weather API.
+        // const request = new Request(url, {
+        //     method: 'POST',
+        //     headers:{
+        //         "x-api-key": API_KEY,
+        //     },
+        //     body: JSON.stringify({
+        //         "points": [
+        //             {
+        //               "lat": -37.819,
+        //               "lon": 174.492
+        //             }
+        //           ],
+        //           "variables": [
+        //             "wind.speed.at-10m"
+        //           ],
+        //           "time": {
+        //             "from": "2023-09-11T01:40:39.445Z",
+        //             "interval": "1h",
+        //             "repeat": 0
+        //           }
+                  
+
+        //     })
+        // });
+
+        const url = `https://jsonplaceholder.typicode.com/users/10`;
+        
+        // const url = `https://api.meteomatics.com/2023-09-10T00:00:00Z/t_2m:C,relative_humidity_2m:p/40.23,20.12/json`;
+
+        // Create a request to the weather API.
+        const request = new Request(url);
+
+        // Make the request to the weather API.
+        const response = await fetch(request);
+
+        // Check the status code of the response.
+        if (response.status !== 200) {
+            throw new Error('Error getting weather: ' + response.status);
+        }
+
+        // Get the weather data from the response body.
+        const newCoordinates = await response.json();
+
+        // Return the weather data.
+        // return weatherData;
+
+        asset.Coordinates.longitude = +newCoordinates.address.geo.lng;
+        asset.Coordinates.latitude = +newCoordinates.address.geo.lat;
+
+        // we insert data in alphabetic order using 'json-stringify-deterministic' and 'sort-keys-recursive'
+        await ctx.stub.putState(id, Buffer.from(stringify(sortKeysRecursive(asset))));
+        return oldCoordinates;
+    }
+
+
 
     // GetAllAssets returns all assets found in the world state.
     @Transaction(false)

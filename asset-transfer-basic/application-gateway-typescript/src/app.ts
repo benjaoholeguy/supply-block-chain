@@ -78,14 +78,29 @@ async function main(): Promise<void> {
         // Create a new asset on the ledger.
         await createAsset(contract);
 
+        await getAllAssets(contract);
+
         // Update an existing asset asynchronously.
         await transferAssetAsync(contract);
+
+
+        await getAllAssets(contract);
+
+
+        // Call the oracle
+        await transactionProposal(contract);
+
+
 
         // Get the asset details by assetID.
         await readAssetByID(contract);
 
         // Update an asset which does not exist.
-        await updateNonExistentAsset(contract)
+        // await updateNonExistentAsset(contract);
+
+        // Return all the current assets on the ledger.
+        await getAllAssets(contract);
+
     } finally {
         gateway.close();
         client.close();
@@ -184,6 +199,29 @@ async function transferAssetAsync(contract: Contract): Promise<void> {
     console.log('*** Transaction committed successfully');
 }
 
+/**
+ * Submit transaction asynchronously, allowing the application to process the smart contract response (e.g. update a UI)
+ * while waiting for the commit notification.
+ */
+async function transactionProposal(contract: Contract): Promise<void> {
+    console.log('\n--> Async Submit Transaction: transactionProposal, updates existing asset AppraisedValue');
+
+    const commit = await contract.submitAsync('InvokeOracle', {
+        arguments: [assetId],
+    });
+    const newLatitude = utf8Decoder.decode(commit.getResult());
+
+    console.log(`*** Successfully submitted transaction to change Coordinates ${newLatitude} to Saptha`);
+    console.log('*** Waiting for transaction commit');
+
+    const status = await commit.getStatus();
+    if (!status.successful) {
+        throw new Error(`Transaction ${status.transactionId} failed to commit with status code ${status.code}`);
+    }
+
+    console.log('*** Transaction committed successfully');
+}
+
 async function readAssetByID(contract: Contract): Promise<void> {
     console.log('\n--> Evaluate Transaction: ReadAsset, function returns asset attributes');
 
@@ -214,6 +252,8 @@ async function updateNonExistentAsset(contract: Contract): Promise<void>{
         console.log('*** Successfully caught the error: \n', error);
     }
 }
+
+
 
 /**
  * envOrDefault() will return the value of an environment variable, or a default value if the variable is undefined.

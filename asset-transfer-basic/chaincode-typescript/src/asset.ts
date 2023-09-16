@@ -22,5 +22,11 @@ export class Asset {
     public Owner: string;
 
     @Property()
+    public Coordinates: {
+      latitude: number,
+      longitude: number
+    };
+
+    @Property()
     public AppraisedValue: number;
 }
