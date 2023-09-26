@@ -10,19 +10,28 @@ export class Asset {
     public docType?: string;
 
     @Property()
-    public ID: string;
+    public VIN: string;
 
     @Property()
-    public Color: string;
+    public Make: string;
 
     @Property()
-    public Size: number;
+    public Model: string;
+
+    @Property()
+    public Year: number;
 
     @Property()
     public Owner: string;
 
     @Property()
-    public Coordinates: {
+    public Location?: string;
+
+    @Property()
+    public Weather?: number | null;
+
+    @Property()
+    public Coordinates?: {
       latitude: number,
       longitude: number
     };
