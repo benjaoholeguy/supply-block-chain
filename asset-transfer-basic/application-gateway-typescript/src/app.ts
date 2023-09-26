@@ -76,30 +76,30 @@ async function main(): Promise<void> {
         await getAllAssets(contract);
 
         // Create a new asset on the ledger.
-        await createAsset(contract);
+        // await createAsset(contract);
 
-        await getAllAssets(contract);
+        // await getAllAssets(contract);
 
         // Update an existing asset asynchronously.
-        await transferAssetAsync(contract);
+        // await transferAssetAsync(contract);
 
 
         await getAllAssets(contract);
 
 
         // Call the oracle
-        await transactionProposal(contract);
+        // await transactionProposal(contract);
 
 
 
         // Get the asset details by assetID.
-        await readAssetByID(contract);
+        // await readAssetByID(contract);
 
         // Update an asset which does not exist.
         // await updateNonExistentAsset(contract);
 
         // Return all the current assets on the ledger.
-        await getAllAssets(contract);
+        // await getAllAssets(contract);
 
     } finally {
         gateway.close();
@@ -198,6 +198,30 @@ async function transferAssetAsync(contract: Contract): Promise<void> {
 
     console.log('*** Transaction committed successfully');
 }
+
+/**
+ * Submit transaction asynchronously, allowing the application to process the smart contract response (e.g. update a UI)
+ * while waiting for the commit notification.
+ */
+async function transferAssetAsync(contract: Contract): Promise<void> {
+    console.log('\n--> Async Submit Transaction: UpdateLocation, updates existing coordinates');
+
+    const commit = await contract.submitAsync('UpdateLocation', {
+        arguments: [assetId, 'Saptha'],
+    });
+    const oldOwner = utf8Decoder.decode(commit.getResult());
+
+    console.log(`*** Successfully submitted transaction to transfer ownership from ${oldOwner} to Saptha`);
+    console.log('*** Waiting for transaction commit');
+
+    const status = await commit.getStatus();
+    if (!status.successful) {
+        throw new Error(`Transaction ${status.transactionId} failed to commit with status code ${status.code}`);
+    }
+
+    console.log('*** Transaction committed successfully');
+}
+
 
 /**
  * Submit transaction asynchronously, allowing the application to process the smart contract response (e.g. update a UI)
