@@ -10,7 +10,7 @@ export class Asset {
     public docType?: string;
 
     @Property()
-    public VIN: string;
+    public ID: string;
 
     @Property()
     public Make: string;
@@ -23,6 +23,12 @@ export class Asset {
 
     @Property()
     public Owner: string;
+
+    @Property()
+    public Temperature?: number;
+
+    @Property()
+    public Humidity?: string;
 
     @Property()
     public Location?: string;

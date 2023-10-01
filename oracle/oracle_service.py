@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, make_response
 import requests
 import datetime
 
+
 app = Flask(__name__)
 
 # Replace with your OpenWeatherMap API key
