@@ -34,7 +34,9 @@ const peerEndpoint = envOrDefault('PEER_ENDPOINT', 'localhost:7051');
 const peerHostAlias = envOrDefault('PEER_HOST_ALIAS', 'peer0.org1.example.com');
 
 const utf8Decoder = new TextDecoder();
-const assetId = `asset${Date.now()}`;
+// const assetId = `asset${Date.now()}`;
+const assetId = 'JTHBW1GG6D2577253';
+const assetId2 = 'SALVP2BG6FH858941';
 
 async function main(): Promise<void> {
 
@@ -76,12 +78,15 @@ async function main(): Promise<void> {
         await getAllAssets(contract);
 
         // Create a new asset on the ledger.
-        // await createAsset(contract);
+        await createAsset(contract);
 
         // await getAllAssets(contract);
 
         // Update an existing asset asynchronously.
         // await transferAssetAsync(contract);
+
+        // Update an existing asset location asynchronously.
+        await transferAssetLocation(contract);
 
 
         await getAllAssets(contract);
@@ -164,16 +169,34 @@ async function getAllAssets(contract: Contract): Promise<void> {
 async function createAsset(contract: Contract): Promise<void> {
     console.log('\n--> Submit Transaction: CreateAsset, creates new asset with ID, Color, Size, Owner and AppraisedValue arguments');
 
-    await contract.submitTransaction(
-        'CreateAsset',
-        assetId,
-        'yellow',
-        '5',
-        'Tom',
-        '1300',
-    );
+    /**
+     * {"vin":"SALVP2BG6FH858941","make":"Infiniti","model":"G","year":2002,"owner":"Bergnaum, Pacocha and Runolfsdottir","appraisedvalue":254373}
+     */
 
-    console.log('*** Transaction committed successfully');
+    try{
+
+    
+    
+        let newAsset = {
+            ID: assetId2,
+            Make: "Infiniti",
+            Model: "G",
+            Year: 2002,
+            Owner: "Bergnaum, Pacocha and Runolfsdottir",
+            AppraisedValue: 254373
+        };
+
+        await contract.submitTransaction(
+            'CreateAsset',
+            JSON.stringify(newAsset)
+        );
+
+        console.log('*** Transaction committed successfully');
+    } catch (error) {
+
+        console.log('*** Successfully caught the error: \n', error);
+
+    }
 }
 
 /**
@@ -203,23 +226,33 @@ async function transferAssetAsync(contract: Contract): Promise<void> {
  * Submit transaction asynchronously, allowing the application to process the smart contract response (e.g. update a UI)
  * while waiting for the commit notification.
  */
-async function transferAssetAsync(contract: Contract): Promise<void> {
+async function transferAssetLocation(contract: Contract): Promise<void> {
     console.log('\n--> Async Submit Transaction: UpdateLocation, updates existing coordinates');
 
-    const commit = await contract.submitAsync('UpdateLocation', {
-        arguments: [assetId, 'Saptha'],
-    });
-    const oldOwner = utf8Decoder.decode(commit.getResult());
+    // try {
 
-    console.log(`*** Successfully submitted transaction to transfer ownership from ${oldOwner} to Saptha`);
-    console.log('*** Waiting for transaction commit');
+        const commit = await contract.submitAsync(
+            'UpdateLocation', {
+            arguments: [assetId],
+            }
+        );
+        const oldOwner = utf8Decoder.decode(commit.getResult());
 
-    const status = await commit.getStatus();
-    if (!status.successful) {
-        throw new Error(`Transaction ${status.transactionId} failed to commit with status code ${status.code}`);
-    }
+        console.log(`*** Successfully submitted transaction to transfer ownership from ${oldOwner} to Saptha`);
+        console.log('*** Waiting for transaction commit');
 
-    console.log('*** Transaction committed successfully');
+        const status = await commit.getStatus();
+        if (!status.successful) {
+            throw new Error(`Transaction ${status.transactionId} failed to commit with status code ${status.code}`);
+        }
+
+        console.log('*** Transaction committed successfully *** Result: ', oldOwner);
+
+    // } catch (error) {
+
+    //     console.log('*** Successfully caught the error in transferAssetLocation: \n', error);
+
+    // }
 }
 
 
